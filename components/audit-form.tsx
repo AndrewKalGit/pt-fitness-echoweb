@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { CheckCircle2 } from "lucide-react"
-import { sendAuditEmail } from "@/lib/emailjs"
+import { CheckCircle2, AlertCircle } from "lucide-react"
+import emailjs from "@emailjs/browser"
 
 interface TurnstileWidgetProps {
   siteKey: string
@@ -29,14 +28,12 @@ function TurnstileWidget({
   useEffect(() => {
     if (!containerRef.current) return
 
-    // Wait for Turnstile to be available
     const initTurnstile = () => {
       if (typeof window.turnstile === "undefined") {
         setTimeout(initTurnstile, 100)
         return
       }
 
-      // Render the widget
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
         theme,
@@ -51,7 +48,6 @@ function TurnstileWidget({
 
     initTurnstile()
 
-    // Cleanup
     return () => {
       if (widgetIdRef.current && typeof window.turnstile !== "undefined") {
         window.turnstile.remove(widgetIdRef.current)
@@ -90,33 +86,45 @@ export function AuditForm() {
   const [turnstileToken, setTurnstileToken] = useState<string>("")
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    // Initialize EmailJS with your public key
+    emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "")
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
 
-    // Check if Turnstile is verified
     if (!turnstileToken) {
-      alert("Please complete the verification")
+      setError("Please complete the verification")
       return
     }
 
     setSubmitting(true)
 
-    // Combine form data and token into a single object
-    const result = await sendAuditEmail({
-      ...form,
-      turnstileToken,
-    })
+    try {
+      const result = await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "",
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "",
+        {
+          from_name: form.name,
+          gym_name: form.gymName,
+          reply_to: form.email,
+          message: form.issue,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || ""
+      )
 
-    if (result.success) {
+      console.log("EmailJS Success:", result)
       setSuccess(true)
-    } else {
-      console.error("Failed to send email:", result.error)
-      // Show error to user or still show success for demo purposes
-      setSuccess(true)
+    } catch (err) {
+      console.error("EmailJS Error:", err)
+      setError("Failed to send email. Please try again or contact us directly.")
+    } finally {
+      setSubmitting(false)
     }
-
-    setSubmitting(false)
   }
 
   return (
@@ -129,18 +137,26 @@ export function AuditForm() {
           Book a free audit to identify exactly what is holding back your private training revenue and how to fix it.
         </p>
 
-        {success ? (
-          <Card className="p-8 bg-blue-50 border-blue-200 text-center">
-            <CheckCircle2 className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth Plan Request Received!</h3>
-            <p className="text-gray-600">
-              We will review your gym's private training flow and reach out within 24 hours with your customized growth
-              plan.
-            </p>
-          </Card>
-        ) : (
-          <Card className="p-8 bg-white border-gray-200">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="p-8 bg-white border-gray-200 min-h-[600px] flex flex-col justify-center">
+          {success ? (
+            <div className="text-center py-8 animate-in fade-in duration-500">
+              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Growth Plan Request Received!
+              </h3>
+              <p className="text-gray-600">
+                We will review your gym's private training flow and reach out within 24 hours with your customized growth plan.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {error && (
+                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <p>{error}</p>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Your Name *
@@ -197,14 +213,20 @@ export function AuditForm() {
                   placeholder="e.g., Leads inquire but never commit, trainers not fully booked, no clear booking system..."
                 />
               </div>
-            <div className="flex justify-center">
-              <TurnstileWidget
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-                onVerify={setTurnstileToken}
-                theme="auto"
-              />
-            </div>
-              <Button type="submit" disabled={submitting} className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+
+              <div className="flex justify-center">
+                <TurnstileWidget
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                  onVerify={setTurnstileToken}
+                  theme="auto"
+                />
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50"
+              >
                 {submitting ? "Submitting..." : "Book a Free Audit"}
               </Button>
 
@@ -219,9 +241,9 @@ export function AuditForm() {
                 </a>
                 .
               </p>
-            </form>
-          </Card>
-        )}
+            </div>
+          )}
+        </Card>
       </div>
     </section>
   )
