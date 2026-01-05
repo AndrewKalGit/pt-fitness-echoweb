@@ -140,7 +140,7 @@ export function AuditForm() {
         <Card className="p-8 bg-white border-gray-200 min-h-[600px] flex flex-col justify-center">
           {success ? (
             <div className="text-center py-8 animate-in fade-in duration-500">
-              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <CheckCircle2 className="w-16 h-16 text-blue-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 Growth Plan Request Received!
               </h3>
