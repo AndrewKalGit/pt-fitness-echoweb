@@ -102,10 +102,8 @@ export function AuditForm() {
 
     setSubmitting(true)
 
-    const result = await sendAuditEmail({
-      ...form,
-      turnstileToken,
-    })
+    // Pass form data and token as separate parameters
+    const result = await sendAuditEmail(form, turnstileToken)
 
     if (result.success) {
       setSuccess(true)

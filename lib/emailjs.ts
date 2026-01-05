@@ -17,6 +17,7 @@ interface AuditFormData {
   gymName: string
   email: string
   issue: string
+  turnstileToken: string; 
 }
 
 export async function sendAuditEmail(formData: AuditFormData): Promise<{ success: boolean; error?: string }> {
