@@ -43,7 +43,7 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <button
                 key={link.id}
@@ -59,17 +59,17 @@ export function Header() {
           </nav>
 
           {/* Mobile Menu Button */}
-          {/* <button
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-gray-900 p-2"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button> */}
+          </button>
         </div>
 
         {/* Mobile Navigation */}
-        {/* {mobileMenuOpen && (
+        {mobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
@@ -83,13 +83,13 @@ export function Header() {
               ))}
               <Button
                 onClick={() => scrollToSection("book-audit")}
-                className="bg-blue-400 hover:bg-blue-500 text-white w-full"
+                className="bg-gray-800 hover:bg-blue-500 text-white w-full"
               >
                 Book Free Audit
               </Button>
             </div>
           </nav>
-        )} */}
+        )}
       </div>
     </header>
   )
