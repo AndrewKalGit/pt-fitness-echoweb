@@ -29,7 +29,7 @@ export function HeroSection() {
             size="lg"
             variant="outline"
             className="text-base px-8 border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
-            onClick={() => scrollToSection("demo")}
+            onClick={() => scrollToSection("case-study")}
           >
             See How the System Works
           </Button>

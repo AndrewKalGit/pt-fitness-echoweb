@@ -15,6 +15,9 @@ export const metadata: Metadata = {
     "Turn private training interest into booked, committed sessions. Conversion-focused web design, local SEO, and backend systems for boutique fitness gyms.",
   keywords: [
     "private training growth",
+    "personal training marketing",
+    "personal training conversion",
+    "personal training booking systems",
     "boutique gym marketing",
     "fitness web design",
     "local SEO for gyms",
